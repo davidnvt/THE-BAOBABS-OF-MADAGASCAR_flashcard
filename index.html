@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcard - The Baobabs of Madagascar</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f0f4fa 0%, #e2eaf5 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: #1e2a3e;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.8rem;
+            color: #0b2b3b;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .header h1 i {
+            color: #2c7da0;
+        }
+
+        .header p {
+            color: #5b7a9a;
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        /* Flashcard Container */
+        .flashcard-container {
+            perspective: 1200px;
+            width: 100%;
+            max-width: 480px;
+            height: 380px; /* Tăng chiều cao để chứa ví dụ + dịch */
+            margin-bottom: 24px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .flashcard.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 28px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 24px;
+            text-align: center;
+        }
+
+        .flashcard-front {
+            background: #ffffff;
+            border: 1px solid #eef2f8;
+        }
+
+        .flashcard-back {
+            background: #1e2f3c;
+            color: #f0f3f8;
+            transform: rotateY(180deg);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow-y: auto; /* Cho phép cuộn nếu nội dung dài */
+        }
+
+        /* Tùy chỉnh thanh cuộn cho mặt sau */
+        .flashcard-back::-webkit-scrollbar {
+            width: 4px;
+        }
+        .flashcard-back::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
+
+        .flashcard-front .word {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: #0b2b3b;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .flashcard-front .ipa {
+            font-size: 0.95rem;
+            color: #5b7a9a;
+            margin-bottom: 12px;
+        }
+
+        .flashcard-front .hint {
+            font-size: 0.75rem;
+            color: #95b0c9;
+            margin-top: 12px;
+        }
+
+        .flashcard-back .meaning {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #f7d44a;
+            margin-bottom: 6px;
+        }
+
+        .flashcard-back .synonym {
+            font-size: 0.8rem;
+            color: #b9e6c9;
+            margin-bottom: 12px;
+        }
+
+        /* Phần Example mới */
+        .flashcard-back .example-container {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin-top: 6px;
+            width: 100%;
+            border-left: 3px solid #2c7da0;
+        }
+
+        .flashcard-back .example-en {
+            font-size: 0.8rem;
+            color: #e2edf5;
+            font-style: italic;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .flashcard-back .example-vn {
+            font-size: 0.75rem;
+            color: #95b0c9;
+            line-height: 1.4;
+        }
+
+        .flashcard-back .level-badge {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            margin-top: 10px;
+            background: rgba(255,255,255,0.15);
+            color: #f7d44a;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 60px;
+            padding: 10px 24px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: #2c7da0;
+            color: white;
+            box-shadow: 0 4px 12px rgba(44, 125, 160, 0.25);
+        }
+
+        .btn-primary:hover {
+            background: #1f5e7e;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: #ffffff;
+            color: #1e2f3c;
+            border: 1px solid #dce5ec;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafd;
+            transform: translateY(-2px);
+        }
+
+        .btn-icon {
+            background: #ffffff;
+            color: #2c7da0;
+            border: 1px solid #dce5ec;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            padding: 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+
+        .btn-icon:hover {
+            background: #f0f6fa;
+            transform: scale(1.05);
+        }
+
+        .counter {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #5b7a9a;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            max-width: 480px;
+            height: 6px;
+            background: #e2edf5;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #2c7da0, #2c9c6e);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* Responsive */
+        @media (max-width: 520px) {
+            .flashcard-container {
+                height: 340px;
+            }
+            .flashcard-front .word {
+                font-size: 1.6rem;
+            }
+            .flashcard-back .meaning {
+                font-size: 0.95rem;
+            }
+            .controls {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1><i class="fas fa-tree"></i> The Baobabs of Madagascar</h1>
+        <p>Flashcard từ vựng · Nhấn vào thẻ để lật</p>
+    </div>
+
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+
+    <div class="flashcard-container">
+        <div class="flashcard" id="flashcard">
+            <!-- Front -->
+            <div class="flashcard-face flashcard-front" id="cardFront">
+                <div class="word" id="wordDisplay">ancient</div>
+                <div class="ipa" id="ipaDisplay">/ˈeɪn.ʃənt/</div>
+                <div class="hint">Nhấn để xem nghĩa & ví dụ</div>
+            </div>
+            <!-- Back -->
+            <div class="flashcard-face flashcard-back" id="cardBack">
+                <div class="meaning" id="meaningDisplay">Cổ xưa</div>
+                <div class="synonym" id="synonymDisplay">🔁 old, antique</div>
+                <div class="example-container">
+                    <div class="example-en" id="exampleEnDisplay">The ancient ruins date back thousands of years.</div>
+                    <div class="example-vn" id="exampleVnDisplay">Những tàn tích cổ xưa có niên đại hàng ngàn năm.</div>
+                </div>
+                <span class="level-badge" id="levelDisplay">B1</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn-icon" id="prevBtn" title="Từ trước"><i class="fas fa-chevron-left"></i></button>
+        <button class="btn btn-primary" id="flipBtn"><i class="fas fa-sync-alt"></i> Lật thẻ</button>
+        <button class="btn-icon" id="speakBtn" title="Phát âm"><i class="fas fa-volume-up"></i></button>
+        <button class="btn-icon" id="nextBtn" title="Từ tiếp theo"><i class="fas fa-chevron-right"></i></button>
+        <span class="counter" id="counterDisplay">1 / 58</span>
+    </div>
+
+    <div style="margin-top: 8px;">
+        <button class="btn btn-secondary" id="shuffleBtn"><i class="fas fa-random"></i> Xáo trộn</button>
+        <button class="btn btn-secondary" id="resetBtn"><i class="fas fa-undo-alt"></i> Đặt lại</button>
+    </div>
+
+    <script>
+        // Danh sách từ vựng đầy đủ (Đã cập nhật câu ví dụ mới + bản dịch)
+        const vocabulary = [
+            { w: "ancient", lvl: "B1", ipa: "/ˈeɪn.ʃənt/", vn: "Cổ xưa", syn: "old, antique", ex_en: "The ancient ruins date back thousands of years.", ex_vn: "Những tàn tích cổ xưa có niên đại hàng ngàn năm." },
+            { w: "spectacular", lvl: "B2", ipa: "/spekˈtæk.jə.lər/", vn: "Ngoạn mục, ấn tượng", syn: "breathtaking, magnificent", ex_en: "The view from the mountain peak is absolutely spectacular.", ex_vn: "Khung cảnh từ đỉnh núi thực sự rất ngoạn mục." },
+            { w: "massive", lvl: "B2", ipa: "/ˈmæs.ɪv/", vn: "To lớn, đồ sộ", syn: "huge, enormous", ex_en: "A massive earthquake struck the coastal city.", ex_vn: "Một trận động đất lớn đã tấn công thành phố ven biển." },
+            { w: "trunk", lvl: "B2", ipa: "/trʌŋk/", vn: "Thân cây", syn: "stem, stalk", ex_en: "The elephant wrapped its trunk around the branch.", ex_vn: "Con voi quấn vòi của nó quanh cành cây." },
+            { w: "distinctive", lvl: "C1", ipa: "/dɪˈstɪŋk.tɪv/", vn: "Đặc biệt, dễ nhận biết", syn: "characteristic, unique", ex_en: "She has a distinctive voice that is easy to recognize.", ex_vn: "Cô ấy có một giọng nói đặc biệt rất dễ nhận ra." },
+            { w: "branch", lvl: "B2", ipa: "/brɑːntʃ/", vn: "Cành cây", syn: "bough, limb", ex_en: "The bird built its nest on a high branch.", ex_vn: "Con chim làm tổ trên một cành cây cao." },
+            { w: "species", lvl: "B2", ipa: "/ˈspiː.ʃiːz/", vn: "Loài", syn: "kind, type", ex_en: "This species of butterfly is found only in this region.", ex_vn: "Loài bướm này chỉ được tìm thấy ở khu vực này." },
+            { w: "religious", lvl: "B2", ipa: "/rɪˈlɪdʒ.əs/", vn: "Thuộc tôn giáo", syn: "devout, spiritual", ex_en: "He is a deeply religious person who attends church every day.", ex_vn: "Anh ấy là một người rất sùng đạo và đến nhà thờ mỗi ngày." },
+            { w: "spiritual", lvl: "C1", ipa: "/ˈspɪr.ɪ.tʃu.əl/", vn: "Thuộc tâm linh", syn: "sacred, holy", ex_en: "Many people find spiritual comfort in nature.", ex_vn: "Nhiều người tìm thấy sự an ủi tâm linh trong thiên nhiên." },
+            { w: "significance", lvl: "B2", ipa: "/sɪɡˈnɪf.ɪ.kəns/", vn: "Tầm quan trọng, ý nghĩa", syn: "importance, meaning", ex_en: "The discovery has great significance for modern medicine.", ex_vn: "Phát hiện này có tầm quan trọng lớn đối với y học hiện đại." },
+            { w: "tribe", lvl: "B2", ipa: "/traɪb/", vn: "Bộ lạc, bộ tộc", syn: "clan, ethnic group", ex_en: "The indigenous tribe has lived in this forest for centuries.", ex_vn: "Bộ lạc bản địa đã sống trong khu rừng này hàng thế kỷ." },
+            { w: "majority", lvl: "B2", ipa: "/məˈdʒɒr.ə.ti/", vn: "Phần lớn", syn: "most, bulk", ex_en: "The majority of students passed the final exam.", ex_vn: "Phần lớn học sinh đã đỗ kỳ thi cuối kỳ." },
+            { w: "population", lvl: "B2", ipa: "/ˌpɒp.jəˈleɪ.ʃən/", vn: "Dân số", syn: "inhabitants, residents", ex_en: "The city's population has doubled in the last decade.", ex_vn: "Dân số của thành phố đã tăng gấp đôi trong thập kỷ qua." },
+            { w: "populous", lvl: "C1", ipa: "/ˈpɒp.jə.ləs/", vn: "Đông dân", syn: "crowded, populated", ex_en: "Tokyo is one of the most populous cities in the world.", ex_vn: "Tokyo là một trong những thành phố đông dân nhất thế giới." },
+            { w: "ideal", lvl: "B2", ipa: "/aɪˈdɪəl/", vn: "Lý tưởng", syn: "perfect, optimal", ex_en: "This beach is an ideal place for a summer vacation.", ex_vn: "Bãi biển này là một nơi lý tưởng cho kỳ nghỉ hè." },
+            { w: "endangered", lvl: "B2", ipa: "/ɪnˈdeɪn.dʒəd/", vn: "Có nguy cơ tuyệt chủng", syn: "threatened, vulnerable", ex_en: "Pandas are an endangered species that need protection.", ex_vn: "Gấu trúc là một loài có nguy cơ tuyệt chủng cần được bảo vệ." },
+            { w: "contradiction", lvl: "C1", ipa: "/ˌkɒn.trəˈdɪk.ʃən/", vn: "Sự mâu thuẫn", syn: "conflict, inconsistency", ex_en: "There is a contradiction between what he says and what he does.", ex_vn: "Có một sự mâu thuẫn giữa những gì anh ấy nói và những gì anh ấy làm." },
+            { w: "scene", lvl: "B2", ipa: "/siːn/", vn: "Khung cảnh, cảnh tượng", syn: "view, setting", ex_en: "The police arrived at the scene of the accident quickly.", ex_vn: "Cảnh sát đã nhanh chóng có mặt tại hiện trường vụ tai nạn." },
+            { w: "man-made", lvl: "C1", ipa: "/ˌmænˈmeɪd/", vn: "Nhân tạo", syn: "artificial, synthetic", ex_en: "Climate change is largely caused by man-made pollution.", ex_vn: "Biến đổi khí hậu phần lớn là do ô nhiễm nhân tạo gây ra." },
+            { w: "plain", lvl: "B2", ipa: "/pleɪn/", vn: "Đồng bằng", syn: "flatland, grassland", ex_en: "The vast plain is covered with grass and wildflowers.", ex_vn: "Đồng bằng rộng lớn được bao phủ bởi cỏ và hoa dại." },
+            { w: "sugar-cane", lvl: "C1", ipa: "/ˈʃʊɡ.ə.keɪn/", vn: "Cây mía", syn: "sugarcane", ex_en: "Farmers in this region grow sugar-cane for the local factory.", ex_vn: "Nông dân ở vùng này trồng mía cho nhà máy địa phương." },
+            { w: "valuable", lvl: "B2", ipa: "/ˈvæl.jə.bəl/", vn: "Có giá trị", syn: "precious, useful", ex_en: "This painting is extremely valuable and must be protected.", ex_vn: "Bức tranh này cực kỳ có giá trị và phải được bảo vệ." },
+            { w: "renewable", lvl: "C1", ipa: "/rɪˈnjuː.ə.bəl/", vn: "Có thể tái tạo", syn: "sustainable, replaceable", ex_en: "Solar energy is a renewable source of power.", ex_vn: "Năng lượng mặt trời là một nguồn năng lượng tái tạo." },
+            { w: "survive", lvl: "B2", ipa: "/səˈvaɪv/", vn: "Sống sót", syn: "endure, persist", ex_en: "Only a few plants can survive in the desert.", ex_vn: "Chỉ có một vài loài thực vật có thể sống sót trong sa mạc." },
+            { w: "reminder", lvl: "C1", ipa: "/rɪˈmaɪn.dər/", vn: "Vật nhắc nhở", syn: "memento, cue", ex_en: "The old photo serves as a reminder of my childhood.", ex_vn: "Bức ảnh cũ đóng vai trò như một vật nhắc nhở về tuổi thơ của tôi." },
+            { w: "exact", lvl: "B2", ipa: "/ɪɡˈzækt/", vn: "Chính xác", syn: "precise, accurate", ex_en: "Can you tell me the exact time of the meeting?", ex_vn: "Bạn có thể cho tôi biết thời gian chính xác của cuộc họp không?" },
+            { w: "cause", lvl: "B2", ipa: "/kɔːz/", vn: "Nguyên nhân", syn: "reason, source", ex_en: "Scientists are investigating the cause of the disease.", ex_vn: "Các nhà khoa học đang điều tra nguyên nhân của căn bệnh." },
+            { w: "uncertain", lvl: "B2", ipa: "/ʌnˈsɜː.tən/", vn: "Không chắc chắn", syn: "unsure, doubtful", ex_en: "The outcome of the election is still uncertain.", ex_vn: "Kết quả của cuộc bầu cử vẫn chưa chắc chắn." },
+            { w: "irrigate", lvl: "C1", ipa: "/ˈɪr.ɪ.ɡeɪt/", vn: "Tưới tiêu", syn: "water, moisten", ex_en: "Farmers use a system of pipes to irrigate their fields.", ex_vn: "Nông dân sử dụng một hệ thống ống để tưới tiêu đồng ruộng của họ." },
+            { w: "partly", lvl: "B2", ipa: "/ˈpɑːt.li/", vn: "Một phần", syn: "partially, somewhat", ex_en: "The delay was partly due to bad weather.", ex_vn: "Sự chậm trễ một phần là do thời tiết xấu." },
+            { w: "blame", lvl: "B2", ipa: "/bleɪm/", vn: "Đổ lỗi, nguyên nhân", syn: "fault, responsibility", ex_en: "Don't blame me for your mistakes.", ex_vn: "Đừng đổ lỗi cho tôi về những sai lầm của bạn." },
+            { w: "adapted to", lvl: "C1", ipa: "/əˈdæp.tɪd tuː/", vn: "Thích nghi với", syn: "adjusted to, acclimatized", ex_en: "These animals have adapted to living in extreme cold.", ex_vn: "Những động vật này đã thích nghi với việc sống trong cái lạnh khắc nghiệt." },
+            { w: "annual", lvl: "B2", ipa: "/ˈæn.ju.əl/", vn: "Hàng năm", syn: "yearly, per annum", ex_en: "The company holds its annual meeting in June.", ex_vn: "Công ty tổ chức cuộc họp hàng năm vào tháng Sáu." },
+            { w: "cope with", lvl: "C1", ipa: "/kəʊp wɪð/", vn: "Đối phó với", syn: "handle, manage", ex_en: "It can be difficult to cope with stress at work.", ex_vn: "Có thể khó đối phó với căng thẳng trong công việc." },
+            { w: "constant", lvl: "B2", ipa: "/ˈkɒn.stənt/", vn: "Liên tục, không đổi", syn: "continuous, persistent", ex_en: "The constant noise from the construction site is annoying.", ex_vn: "Tiếng ồn liên tục từ công trường xây dựng thật khó chịu." },
+            { w: "lone", lvl: "B2", ipa: "/ləʊn/", vn: "Đơn độc, lẻ loi", syn: "solitary, single", ex_en: "A lone wolf wandered through the snowy forest.", ex_vn: "Một con sói đơn độc lang thang qua khu rừng phủ đầy tuyết." },
+            { w: "separate", lvl: "B2", ipa: "/ˈsep.ər.ət/", vn: "Tách rời", syn: "divide, isolate", ex_en: "Please separate the recyclable waste from the regular trash.", ex_vn: "Vui lòng tách rác thải tái chế ra khỏi rác thông thường." },
+            { w: "susceptible to", lvl: "C1", ipa: "/səˈsep.tə.bəl tuː/", vn: "Dễ bị ảnh hưởng bởi", syn: "vulnerable to, prone to", ex_en: "Young children are more susceptible to infections.", ex_vn: "Trẻ nhỏ dễ bị nhiễm trùng hơn." },
+            { w: "survival", lvl: "B2", ipa: "/səˈvaɪ.vəl/", vn: "Sự sống còn", syn: "existence, endurance", ex_en: "The survival of the human race depends on clean water.", ex_vn: "Sự sống còn của loài người phụ thuộc vào nước sạch." },
+            { w: "land clearance", lvl: "C1", ipa: "/lænd ˈklɪə.rəns/", vn: "Giải phóng mặt bằng", syn: "deforestation, clearing", ex_en: "Land clearance for agriculture is destroying the rainforest.", ex_vn: "Việc giải phóng mặt bằng để làm nông nghiệp đang phá hủy rừng nhiệt đới." },
+            { w: "suppress", lvl: "C1", ipa: "/səˈpres/", vn: "Đàn áp, ức chế", syn: "restrain, inhibit", ex_en: "The government tried to suppress the protests.", ex_vn: "Chính phủ đã cố gắng đàn áp các cuộc biểu tình." },
+            { w: "regeneration", lvl: "C1", ipa: "/rɪˌdʒen.əˈreɪ.ʃən/", vn: "Tái sinh", syn: "renewal, regrowth", ex_en: "The regeneration of the forest after the fire took many years.", ex_vn: "Quá trình tái sinh của khu rừng sau đám cháy mất nhiều năm." },
+            { w: "resistance to", lvl: "C1", ipa: "/rɪˈzɪs.təns tuː/", vn: "Sự kháng cự với", syn: "defense against, immunity to", ex_en: "The bacteria have developed resistance to antibiotics.", ex_vn: "Vi khuẩn đã phát triển sự kháng cự với thuốc kháng sinh." },
+            { w: "eventually", lvl: "B2", ipa: "/ɪˈven.tʃu.ə.li/", vn: "Cuối cùng", syn: "finally, ultimately", ex_en: "After many delays, the train eventually arrived.", ex_vn: "Sau nhiều lần trì hoãn, cuối cùng chuyến tàu cũng đã đến." },
+            { w: "disturbance", lvl: "C1", ipa: "/dɪˈstɜː.bəns/", vn: "Sự xáo trộn", syn: "disruption, interference", ex_en: "Any disturbance in the classroom will result in punishment.", ex_vn: "Bất kỳ sự xáo trộn nào trong lớp học sẽ dẫn đến hình phạt." },
+            { w: "promote", lvl: "B2", ipa: "/prəˈməʊt/", vn: "Thúc đẩy", syn: "encourage, boost", ex_en: "Regular exercise can promote good health.", ex_vn: "Tập thể dục thường xuyên có thể thúc đẩy sức khỏe tốt." },
+            { w: "rapid", lvl: "B2", ipa: "/ˈræp.ɪd/", vn: "Nhanh chóng", syn: "fast, swift", ex_en: "The country is experiencing rapid economic growth.", ex_vn: "Đất nước đang trải qua sự tăng trưởng kinh tế nhanh chóng." },
+            { w: "spread", lvl: "B2", ipa: "/spred/", vn: "Lan rộng", syn: "expand, extend", ex_en: "The news of the victory spread quickly across the city.", ex_vn: "Tin tức về chiến thắng lan rộng nhanh chóng khắp thành phố." },
+            { w: "germination", lvl: "C1", ipa: "/ˌdʒɜː.mɪˈneɪ.ʃən/", vn: "Sự nảy mầm", syn: "sprouting, budding", ex_en: "Seeds need water and warmth for germination.", ex_vn: "Hạt giống cần nước và sự ấm áp để nảy mầm." },
+            { w: "dispersal", lvl: "C1", ipa: "/dɪˈspɜː.səl/", vn: "Sự phân tán", syn: "scattering, distribution", ex_en: "The wind is responsible for the dispersal of these seeds.", ex_vn: "Gió chịu trách nhiệm cho sự phân tán của những hạt giống này." },
+            { w: "absence", lvl: "B2", ipa: "/ˈæb.səns/", vn: "Sự vắng mặt, thiếu", syn: "lack, nonappearance", ex_en: "His absence from the meeting was noticed by everyone.", ex_vn: "Sự vắng mặt của anh ấy trong cuộc họp đã được mọi người chú ý." },
+            { w: "extinct", lvl: "C1", ipa: "/ɪkˈstɪŋkt/", vn: "Tuyệt chủng", syn: "died out, vanished", ex_en: "Dinosaurs became extinct millions of years ago.", ex_vn: "Khủng long đã tuyệt chủng hàng triệu năm trước." },
+            { w: "concerned", lvl: "C1", ipa: "/kənˈsɜːnd/", vn: "Lo lắng, quan tâm", syn: "worried, anxious", ex_en: "Parents are concerned about their children's safety online.", ex_vn: "Các bậc cha mẹ lo lắng về sự an toàn của con cái họ trên mạng." },
+            { w: "intact", lvl: "C1", ipa: "/ɪnˈtækt/", vn: "Nguyên vẹn", syn: "whole, undamaged", ex_en: "Despite the accident, the car remained largely intact.", ex_vn: "Bất chấp vụ tai nạn, chiếc xe vẫn còn nguyên vẹn phần lớn." },
+            { w: "habitat", lvl: "B2", ipa: "/ˈhæb.ɪ.tæt/", vn: "Môi trường sống", syn: "environment, home", ex_en: "The natural habitat of the tiger is shrinking due to deforestation.", ex_vn: "Môi trường sống tự nhiên của hổ đang bị thu hẹp do nạn phá rừng." },
+            { w: "distribution", lvl: "C1", ipa: "/ˌdɪs.trɪˈbjuː.ʃən/", vn: "Sự phân bố", syn: "allocation, spread", ex_en: "The distribution of wealth in the country is very unequal.", ex_vn: "Sự phân bố của cải trong nước rất không đồng đều." },
+            { w: "swift", lvl: "C1", ipa: "/swɪft/", vn: "Nhanh chóng", syn: "quick, rapid", ex_en: "The government took swift action to help the victims.", ex_vn: "Chính phủ đã có hành động nhanh chóng để giúp đỡ các nạn nhân." },
+            { w: "conservation", lvl: "B2", ipa: "/ˌkɒn.səˈveɪ.ʃən/", vn: "Bảo tồn", syn: "preservation, protection", ex_en: "Wildlife conservation is essential to protect endangered species.", ex_vn: "Bảo tồn động vật hoang dã là điều cần thiết để bảo vệ các loài có nguy cơ tuyệt chủng." }
+        ];
+
+        // DOM Elements
+        const flashcard = document.getElementById('flashcard');
+        const wordDisplay = document.getElementById('wordDisplay');
+        const ipaDisplay = document.getElementById('ipaDisplay');
+        const meaningDisplay = document.getElementById('meaningDisplay');
+        const synonymDisplay = document.getElementById('synonymDisplay');
+        const exampleEnDisplay = document.getElementById('exampleEnDisplay');
+        const exampleVnDisplay = document.getElementById('exampleVnDisplay');
+        const levelDisplay = document.getElementById('levelDisplay');
+        const counterDisplay = document.getElementById('counterDisplay');
+        const progressFill = document.getElementById('progressFill');
+
+        // State
+        let currentIndex = 0;
+        let isFlipped = false;
+        let shuffledList = [...vocabulary];
+
+        // Initialize
+        function init() {
+            updateCard();
+            updateProgress();
+        }
+
+        // Update card content
+        function updateCard() {
+            const item = shuffledList[currentIndex];
+            wordDisplay.textContent = item.w;
+            ipaDisplay.textContent = item.ipa;
+            meaningDisplay.textContent = item.vn;
+            synonymDisplay.textContent = `🔁 ${item.syn}`;
+            exampleEnDisplay.textContent = item.ex_en;
+            exampleVnDisplay.textContent = item.ex_vn;
+            levelDisplay.textContent = item.lvl;
+            counterDisplay.textContent = `${currentIndex + 1} / ${shuffledList.length}`;
+            
+            // Reset flip state
+            if (isFlipped) {
+                flashcard.classList.remove('flipped');
+                isFlipped = false;
+            }
+        }
+
+        // Update progress bar
+        function updateProgress() {
+            const percent = ((currentIndex + 1) / shuffledList.length) * 100;
+            progressFill.style.width = `${percent}%`;
+        }
+
+        // Toggle flip
+        function toggleFlip() {
+            flashcard.classList.toggle('flipped');
+            isFlipped = !isFlipped;
+        }
+
+        // Next card
+        function nextCard() {
+            if (currentIndex < shuffledList.length - 1) {
+                currentIndex++;
+                updateCard();
+                updateProgress();
+            }
+        }
+
+        // Previous card
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateCard();
+                updateProgress();
+            }
+        }
+
+        // Speak word
+        function speakWord() {
+            const word = shuffledList[currentIndex].w;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'en-GB';
+            utterance.rate = 0.9;
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // Shuffle list
+        function shuffleList() {
+            for (let i = shuffledList.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffledList[i], shuffledList[j]] = [shuffledList[j], shuffledList[i]];
+            }
+            currentIndex = 0;
+            updateCard();
+            updateProgress();
+        }
+
+        // Reset
+        function resetList() {
+            shuffledList = [...vocabulary];
+            currentIndex = 0;
+            updateCard();
+            updateProgress();
+        }
+
+        // Event Listeners
+        flashcard.addEventListener('click', toggleFlip);
+        document.getElementById('flipBtn').addEventListener('click', toggleFlip);
+        document.getElementById('nextBtn').addEventListener('click', nextCard);
+        document.getElementById('prevBtn').addEventListener('click', prevCard);
+        document.getElementById('speakBtn').addEventListener('click', speakWord);
+        document.getElementById('shuffleBtn').addEventListener('click', shuffleList);
+        document.getElementById('resetBtn').addEventListener('click', resetList);
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextCard();
+            if (e.key === 'ArrowLeft') prevCard();
+            if (e.key === ' ') {
+                e.preventDefault();
+                toggleFlip();
+            }
+        });
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
